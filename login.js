@@ -1,56 +1,66 @@
 /* eslint-env node */
-// Importação de Módulos Core
-var mysql = require('mysql');
-var express = require('express');
-var session = require('express-session');
-var bodyParser = require('body-parser'); // Analisa o corpo das requisições HTTP
-var path = require('path');
+// Importação de pacotes necessários para o ecossistema Node.js
+var mysql = require('mysql');          // Driver de conexão com o banco MySQL
+var express = require('express');      // Framework para gerenciar rotas e requisições HTTP
+var session = require('express-session'); // Middleware para controle de sessões de usuário
+var bodyParser = require('body-parser'); // Extrator de dados de formulários (corpo da requisição)
+var path = require('path');            // Utilitário para manipular caminhos de arquivos
 
-// Configuração da Conexão MySQL
-// Nota: Certifique-se de que o XAMPP/Wamp está rodando e a DB 'formulariologin' existe.
+// Configuração da conexão com o banco de dados MySQL (XAMPP padrão)
 var connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: '',            // No XAMPP, a senha do root por padrão é vazia
     database: 'formulariologin'
 });
 
 var app = express();
 
-// Configuração de Sessão: permite que o servidor "lembre" quem é o usuário.
+/**
+ * CONFIGURAÇÕES DO EXPRESS (Middlewares)
+ */
+// Define a estratégia de sessão para manter o usuário logado entre páginas
 app.use(session({
-    secret: 'secret', // Chave para criptografar o ID da sessão
-    resave: true,
-    saveUninitialized: true
+    secret: 'secret',        // Chave secreta para assinar o cookie da sessão
+    resave: true,            // Força a sessão a ser salva de volta na loja de sessões
+    saveUninitialized: true  // Força uma sessão "não inicializada" a ser salva
 }));
 
-// Configuração do Body-Parser: transforma os dados do formulário em um objeto JS fácil de ler.
+// Configura o bodyParser para entender dados vindos de formulários HTML (URL Encoded)
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // Também permite entender dados em formato JSON
 
 /**
- * ROTA GET '/': Serve o arquivo HTML inicial.
- * __dirname garante que o Node encontre o arquivo no caminho absoluto da pasta.
+ * ROTA GET '/': Página Inicial (Login)
+ * Quando o usuário acessa http://localhost:3000, o servidor envia o arquivo HTML.
  */
 app.get('/', function (request, response) {
+    // path.join garante que o caminho funcione independente do sistema operacional
     response.sendFile(path.join(__dirname + '/login.html'));
 });
 
 /**
- * ROTA POST '/auth': O coração da autenticação.
+ * ROTA POST '/auth': Processamento do Login
+ * Recebe os dados do formulário e consulta o banco de dados.
  */
 app.post('/auth', function (request, response) {
+    // Extrai o nome de usuário e senha enviados pelo formulário (via name="...")
     var username = request.body.username;
     var password = request.body.password;
 
+    // Validação básica: verifica se os campos não estão vazios
     if (username && password) {
-        // Query Segura: O uso de '?' evita que hackers injetem comandos maliciosos no seu banco.
+        // Query SQL: O uso de '?' evita ataques de SQL Injection (segurança de dados)
         connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function (error, results, fields) {
+            
+            // Se o array de resultados tiver tamanho > 0, o usuário existe e a senha confere
             if (results.length > 0) {
-                // Sucesso: Criamos a "identidade" do usuário na sessão.
+                // Autenticação bem-sucedida: criamos as variáveis na sessão do servidor
                 request.session.loggedin = true;
                 request.session.username = username;
-                response.redirect('/home'); // Redireciona para a área restrita
+                
+                // Redireciona o usuário para a página restrita
+                response.redirect('/home');
             } else {
                 response.send('Nome de usuário e / ou senha incorretos!');
             }
@@ -63,19 +73,21 @@ app.post('/auth', function (request, response) {
 });
 
 /**
- * ROTA GET '/home': Área Protegida.
+ * ROTA GET '/home': Área Restrita
+ * Verifica se o usuário tem permissão (está logado) para ver o conteúdo.
  */
 app.get('/home', function (request, response) {
-    // Verificamos se a flag 'loggedin' existe na sessão deste usuário específico.
+    // Checa a variável de sessão criada no momento do login (/auth)
     if (request.session.loggedin) {
         response.send('Welcome back, ' + request.session.username + '!');
     } else {
+        // Se não houver sessão ativa, bloqueia o acesso
         response.send('Por favor faça o login para ver esta página!');
     }
     response.end();
 });
 
-// Inicialização do Servidor na porta 3000
+// Inicia o servidor na porta 3000
 app.listen(3000, () => {
-    console.log('Servidor rodando em http://localhost:3000');
+    console.log('Servidor iniciado em http://localhost:3000');
 });
