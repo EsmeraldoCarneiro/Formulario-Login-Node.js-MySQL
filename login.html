@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema Esmeraldo Junior</title>
+
+    <style>
+        /* Estilização Centralizada do Formulário */
+        .login-form {
+            width: 300px;
+            margin: 100px auto; /* Centraliza verticalmente na página */
+            font-family: Tahoma, Geneva, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        .login-form h1 {
+            text-align: center;
+            color: #0a0a0a;
+            font-size: 24px;
+            padding: 10px 0 20px 0;
+            margin: 0;
+        }
+
+        /* Estilo dos campos de texto e senha */
+        .login-form input[type="password"],
+        .login-form input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #f32e2e; /* Borda vermelha conforme seu código */
+            margin-bottom: 15px;
+            box-sizing: border-box; /* Garante que o padding não aumente o tamanho do campo */
+            border-radius: 4px;
+        }
+
+        /* Estilo do botão de entrar (Submit) */
+        .login-form input[type="submit"] {
+            width: 100%;
+            padding: 15px;
+            background-color: #535b63;
+            border: 0;
+            box-sizing: border-box;
+            cursor: pointer;
+            font-weight: bold;
+            color: #faee49; /* Texto Amarelo conforme seu código */
+            transition: background 0.3s;
+            border-radius: 4px;
+        }
+
+        .login-form input[type="submit"]:hover {
+            background-color: #3e444a;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-form">
+        <h1>Login Form</h1>
+        
+        <form action="auth" method="POST">
+            <input type="text" name="username" placeholder="Usuário" required>
+            <input type="password" name="password" placeholder="Senha" required>
+            <input type="submit" value="Entrar">
+        </form>
+    </div>
+</body>
+
+</html>
